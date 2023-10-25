@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.library.mappers.BookInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.library.entity.po.BookInfo">
+		<!-- 主键 -->
+		<id column="book_id" property="bookId"/>
+		<!-- 书名 -->
+		<result column="name" property="name"/>
+		<!-- 作者 -->
+		<result column="author" property="author"/>
+		<!-- 出版社 -->
+		<result column="publish" property="publish"/>
+		<!-- ISBN -->
+		<result column="ISBN" property="ISBN"/>
+		<!-- 介绍 -->
+		<result column="introduction" property="introduction"/>
+		<!-- 语言 -->
+		<result column="language" property="language"/>
+		<!-- 价格 -->
+		<result column="price" property="price"/>
+		<!-- 出版时间 -->
+		<result column="pub_date" property="pubDate"/>
+		<!-- 分类 -->
+		<result column="class_id" property="classId"/>
+		<!-- 数量 -->
+		<result column="number" property="number"/>
+	</resultMap>
+
+	<!--通用查询结果列-->
+	<sql id="base_column_list">
+		book_id,name,author,publish,ISBN,introduction,language,price,pub_date,class_id,number
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.bookId != null">
+			and book_id = #{query.bookId}
+		</if>
+		<if test="query.name != null and query.name!=''">
+			and name = #{query.name}
+		</if>
+		<if test="query.author != null and query.author!=''">
+			and author = #{query.author}
+		</if>
+		<if test="query.publish != null and query.publish!=''">
+			and publish = #{query.publish}
+		</if>
+		<if test="query.ISBN != null and query.ISBN!=''">
+			and ISBN = #{query.ISBN}
+		</if>
+		<if test="query.introduction != null and query.introduction!=''">
+			and introduction = #{query.introduction}
+		</if>
+		<if test="query.language != null and query.language!=''">
+			and language = #{query.language}
+		</if>
+		<if test="query.price != null">
+			and price = #{query.price}
+		</if>
+		<if test="query.pubDate != null">
+			and pub_date = #{query.pubDate}
+		</if>
+		<if test="query.classId != null">
+			and class_id = #{query.classId}
+		</if>
+		<if test="query.number != null">
+			and number = #{query.number}
+		</if>
+	</sql>
+
+	<!--扩展的查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.nameFuzzy != null and query.nameFuzzy != ''">
+			and name like concat('%', #{query.nameFuzzy}, '%')
+		</if>
+		<if test="query.authorFuzzy != null and query.authorFuzzy != ''">
+			and author like concat('%', #{query.authorFuzzy}, '%')
+		</if>
+		<if test="query.publishFuzzy != null and query.publishFuzzy != ''">
+			and publish like concat('%', #{query.publishFuzzy}, '%')
+		</if>
+		<if test="query.ISBNFuzzy != null and query.ISBNFuzzy != ''">
+			and ISBN like concat('%', #{query.ISBNFuzzy}, '%')
+		</if>
+		<if test="query.introductionFuzzy != null and query.introductionFuzzy != ''">
+			and introduction like concat('%', #{query.introductionFuzzy}, '%')
+		</if>
+		<if test="query.languageFuzzy != null and query.languageFuzzy != ''">
+			and language like concat('%', #{query.languageFuzzy}, '%')
+		</if>
+		<if test="query.pubDateStart != null and query.pubDateStart != ''">
+			<![CDATA[ and pub_date >= str_to_date(#{query.pubDateStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.pubDateEnd != null and query.pubDateEnd != ''">
+			<![CDATA[ and pub_date < date_sub(str_to_date(#{query.pubDateEnd}, '%Y-%m-%d'), interval - 1 day) ]]>
+		</if>
+	</sql>
+
+	<!--扩展的查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM book_info <include refid="query_condition"/>
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM book_info <include refid="query_condition"/>
+	</select>
+
+	<!--插入（匹配有值的字段）-->
+	<insert id="insert" parameterType="com.library.entity.po.BookInfo">
+		<selectKey keyProperty="bean.book_id" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO book_info 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.bookId != null">
+				book_id,
+			</if>
+			<if test="bean.name != null">
+				name,
+			</if>
+			<if test="bean.author != null">
+				author,
+			</if>
+			<if test="bean.publish != null">
+				publish,
+			</if>
+			<if test="bean.ISBN != null">
+				ISBN,
+			</if>
+			<if test="bean.introduction != null">
+				introduction,
+			</if>
+			<if test="bean.language != null">
+				language,
+			</if>
+			<if test="bean.price != null">
+				price,
+			</if>
+			<if test="bean.pubDate != null">
+				pub_date,
+			</if>
+			<if test="bean.classId != null">
+				class_id,
+			</if>
+			<if test="bean.number != null">
+				number,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.bookId != null">
+				#{bean.bookId},
+			</if>
+			<if test="bean.name != null">
+				#{bean.name},
+			</if>
+			<if test="bean.author != null">
+				#{bean.author},
+			</if>
+			<if test="bean.publish != null">
+				#{bean.publish},
+			</if>
+			<if test="bean.ISBN != null">
+				#{bean.ISBN},
+			</if>
+			<if test="bean.introduction != null">
+				#{bean.introduction},
+			</if>
+			<if test="bean.language != null">
+				#{bean.language},
+			</if>
+			<if test="bean.price != null">
+				#{bean.price},
+			</if>
+			<if test="bean.pubDate != null">
+				#{bean.pubDate},
+			</if>
+			<if test="bean.classId != null">
+				#{bean.classId},
+			</if>
+			<if test="bean.number != null">
+				#{bean.number},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或者更新（匹配有值的字段）-->
+	<insert id="insertOrUpdate" parameterType="com.library.entity.po.BookInfo">
+		INSERT INTO book_info 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.bookId != null">
+				book_id,
+			</if>
+			<if test="bean.name != null">
+				name,
+			</if>
+			<if test="bean.author != null">
+				author,
+			</if>
+			<if test="bean.publish != null">
+				publish,
+			</if>
+			<if test="bean.ISBN != null">
+				ISBN,
+			</if>
+			<if test="bean.introduction != null">
+				introduction,
+			</if>
+			<if test="bean.language != null">
+				language,
+			</if>
+			<if test="bean.price != null">
+				price,
+			</if>
+			<if test="bean.pubDate != null">
+				pub_date,
+			</if>
+			<if test="bean.classId != null">
+				class_id,
+			</if>
+			<if test="bean.number != null">
+				number,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.bookId != null">
+				#{bean.bookId},
+			</if>
+			<if test="bean.name != null">
+				#{bean.name},
+			</if>
+			<if test="bean.author != null">
+				#{bean.author},
+			</if>
+			<if test="bean.publish != null">
+				#{bean.publish},
+			</if>
+			<if test="bean.ISBN != null">
+				#{bean.ISBN},
+			</if>
+			<if test="bean.introduction != null">
+				#{bean.introduction},
+			</if>
+			<if test="bean.language != null">
+				#{bean.language},
+			</if>
+			<if test="bean.price != null">
+				#{bean.price},
+			</if>
+			<if test="bean.pubDate != null">
+				#{bean.pubDate},
+			</if>
+			<if test="bean.classId != null">
+				#{bean.classId},
+			</if>
+			<if test="bean.number != null">
+				#{bean.number},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.name != null">
+				 name = VALUES(name),
+			</if>
+			<if test="bean.author != null">
+				 author = VALUES(author),
+			</if>
+			<if test="bean.publish != null">
+				 publish = VALUES(publish),
+			</if>
+			<if test="bean.ISBN != null">
+				 ISBN = VALUES(ISBN),
+			</if>
+			<if test="bean.introduction != null">
+				 introduction = VALUES(introduction),
+			</if>
+			<if test="bean.language != null">
+				 language = VALUES(language),
+			</if>
+			<if test="bean.price != null">
+				 price = VALUES(price),
+			</if>
+			<if test="bean.pubDate != null">
+				 pub_date = VALUES(pub_date),
+			</if>
+			<if test="bean.classId != null">
+				 class_id = VALUES(class_id),
+			</if>
+			<if test="bean.number != null">
+				 number = VALUES(number),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.library.entity.po.BookInfo">
+		INSERT INTO book_info(name,author,publish,ISBN,introduction,language,price,pub_date,class_id,number) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.name},#{item.author},#{item.publish},#{item.ISBN},#{item.introduction},#{item.language},#{item.price},#{item.pubDate},#{item.classId},#{item.number})
+		</foreach>
+	</insert>
+
+	<!-- 添加或更新（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.library.entity.po.BookInfo">
+		INSERT INTO book_info(name,author,publish,ISBN,introduction,language,price,pub_date,class_id,number) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.name},#{item.author},#{item.publish},#{item.ISBN},#{item.introduction},#{item.language},#{item.price},#{item.pubDate},#{item.classId},#{item.number})
+		</foreach>
+		on DUPLICATE key update book_id = VALUES(book_id),name = VALUES(name),author = VALUES(author),publish = VALUES(publish),ISBN = VALUES(ISBN),introduction = VALUES(introduction),language = VALUES(language),price = VALUES(price),pub_date = VALUES(pub_date),class_id = VALUES(class_id),number = VALUES(number)
+	</insert>
+	<!-- 根据BookId查询 -->
+	<select id="selectByBookId" resultMap="base_result_map">
+		select <include refid="base_column_list"/> from book_info where book_id = #{bookId}
+	</select>
+
+	<!-- 根据BookId更新 -->
+	<update id="updateByBookId" parameterType="com.library.entity.po.BookInfo">
+		update book_info
+		<set>
+			<if test="bean.bookId != null">
+				book_id = #{bean.bookId},
+			</if>
+			<if test="bean.name != null">
+				name = #{bean.name},
+			</if>
+			<if test="bean.author != null">
+				author = #{bean.author},
+			</if>
+			<if test="bean.publish != null">
+				publish = #{bean.publish},
+			</if>
+			<if test="bean.ISBN != null">
+				ISBN = #{bean.ISBN},
+			</if>
+			<if test="bean.introduction != null">
+				introduction = #{bean.introduction},
+			</if>
+			<if test="bean.language != null">
+				language = #{bean.language},
+			</if>
+			<if test="bean.price != null">
+				price = #{bean.price},
+			</if>
+			<if test="bean.pubDate != null">
+				pub_date = #{bean.pubDate},
+			</if>
+			<if test="bean.classId != null">
+				class_id = #{bean.classId},
+			</if>
+			<if test="bean.number != null">
+				number = #{bean.number},
+			</if>
+		</set>
+		where book_id = #{bookId}
+	</update>
+
+	<!-- 根据BookId删除 -->
+	<delete id="deleteByBookId">
+		delete from book_info where book_id = #{bookId}
+	</delete>
+
+</mapper>

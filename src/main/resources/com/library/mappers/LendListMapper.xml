@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.library.mappers.LendListMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.library.entity.po.LendList">
+		<!-- 借还记录ID -->
+		<id column="ser_num" property="serNum"/>
+		<!-- 书主键 -->
+		<result column="book_id" property="bookId"/>
+		<!-- 用户ID -->
+		<result column="user_id" property="userId"/>
+		<!-- 借书日期 -->
+		<result column="lend_date" property="lendDate"/>
+		<!-- 还书日期 -->
+		<result column="back_date" property="backDate"/>
+	</resultMap>
+
+	<!--通用查询结果列-->
+	<sql id="base_column_list">
+		ser_num,book_id,user_id,lend_date,back_date
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.serNum != null">
+			and ser_num = #{query.serNum}
+		</if>
+		<if test="query.bookId != null">
+			and book_id = #{query.bookId}
+		</if>
+		<if test="query.userId != null">
+			and user_id = #{query.userId}
+		</if>
+		<if test="query.lendDate != null">
+			and lend_date = #{query.lendDate}
+		</if>
+		<if test="query.backDate != null">
+			and back_date = #{query.backDate}
+		</if>
+	</sql>
+
+	<!--扩展的查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.lendDateStart != null and query.lendDateStart != ''">
+			<![CDATA[ and lend_date >= str_to_date(#{query.lendDateStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.lendDateEnd != null and query.lendDateEnd != ''">
+			<![CDATA[ and lend_date < date_sub(str_to_date(#{query.lendDateEnd}, '%Y-%m-%d'), interval - 1 day) ]]>
+		</if>
+		<if test="query.backDateStart != null and query.backDateStart != ''">
+			<![CDATA[ and back_date >= str_to_date(#{query.backDateStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.backDateEnd != null and query.backDateEnd != ''">
+			<![CDATA[ and back_date < date_sub(str_to_date(#{query.backDateEnd}, '%Y-%m-%d'), interval - 1 day) ]]>
+		</if>
+	</sql>
+
+	<!--扩展的查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM lend_list <include refid="query_condition"/>
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		SELECT count(1) FROM lend_list <include refid="query_condition"/>
+	</select>
+
+	<!--插入（匹配有值的字段）-->
+	<insert id="insert" parameterType="com.library.entity.po.LendList">
+		<selectKey keyProperty="bean.ser_num" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO lend_list 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.serNum != null">
+				ser_num,
+			</if>
+			<if test="bean.bookId != null">
+				book_id,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.lendDate != null">
+				lend_date,
+			</if>
+			<if test="bean.backDate != null">
+				back_date,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.serNum != null">
+				#{bean.serNum},
+			</if>
+			<if test="bean.bookId != null">
+				#{bean.bookId},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.lendDate != null">
+				#{bean.lendDate},
+			</if>
+			<if test="bean.backDate != null">
+				#{bean.backDate},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或者更新（匹配有值的字段）-->
+	<insert id="insertOrUpdate" parameterType="com.library.entity.po.LendList">
+		INSERT INTO lend_list 
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.serNum != null">
+				ser_num,
+			</if>
+			<if test="bean.bookId != null">
+				book_id,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.lendDate != null">
+				lend_date,
+			</if>
+			<if test="bean.backDate != null">
+				back_date,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.serNum != null">
+				#{bean.serNum},
+			</if>
+			<if test="bean.bookId != null">
+				#{bean.bookId},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.lendDate != null">
+				#{bean.lendDate},
+			</if>
+			<if test="bean.backDate != null">
+				#{bean.backDate},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.bookId != null">
+				 book_id = VALUES(book_id),
+			</if>
+			<if test="bean.userId != null">
+				 user_id = VALUES(user_id),
+			</if>
+			<if test="bean.lendDate != null">
+				 lend_date = VALUES(lend_date),
+			</if>
+			<if test="bean.backDate != null">
+				 back_date = VALUES(back_date),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.library.entity.po.LendList">
+		INSERT INTO lend_list(book_id,user_id,lend_date,back_date) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.bookId},#{item.userId},#{item.lendDate},#{item.backDate})
+		</foreach>
+	</insert>
+
+	<!-- 添加或更新（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.library.entity.po.LendList">
+		INSERT INTO lend_list(book_id,user_id,lend_date,back_date) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.bookId},#{item.userId},#{item.lendDate},#{item.backDate})
+		</foreach>
+		on DUPLICATE key update ser_num = VALUES(ser_num),book_id = VALUES(book_id),user_id = VALUES(user_id),lend_date = VALUES(lend_date),back_date = VALUES(back_date)
+	</insert>
+	<!-- 根据SerNum查询 -->
+	<select id="selectBySerNum" resultMap="base_result_map">
+		select <include refid="base_column_list"/> from lend_list where ser_num = #{serNum}
+	</select>
+
+	<!-- 根据SerNum更新 -->
+	<update id="updateBySerNum" parameterType="com.library.entity.po.LendList">
+		update lend_list
+		<set>
+			<if test="bean.serNum != null">
+				ser_num = #{bean.serNum},
+			</if>
+			<if test="bean.bookId != null">
+				book_id = #{bean.bookId},
+			</if>
+			<if test="bean.userId != null">
+				user_id = #{bean.userId},
+			</if>
+			<if test="bean.lendDate != null">
+				lend_date = #{bean.lendDate},
+			</if>
+			<if test="bean.backDate != null">
+				back_date = #{bean.backDate},
+			</if>
+		</set>
+		where ser_num = #{serNum}
+	</update>
+
+	<!-- 根据SerNum删除 -->
+	<delete id="deleteBySerNum">
+		delete from lend_list where ser_num = #{serNum}
+	</delete>
+
+</mapper>
